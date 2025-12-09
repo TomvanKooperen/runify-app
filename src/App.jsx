@@ -27,7 +27,7 @@ const RunifyApp = () => {
   };
 
   const ScreenContainer = ({ children, title, onBack, rightAction }) => (
-    <div className="w-full h-full max-w-md mx-auto bg-indigo-50 flex flex-col relative overflow-hidden font-sans">
+    <div className="w-full h-full bg-indigo-50 flex flex-col relative overflow-hidden font-sans">
       {/* Status Bar Mock */}
       <div className="h-6 w-full bg-slate-800 opacity-10 mb-2"></div>
 
@@ -752,13 +752,8 @@ const RunifyApp = () => {
   };
 
   return (
-    <div className="w-full h-screen bg-slate-200 flex items-center justify-center p-4">
-      {/* Phone Bezel */}
-      <div className="w-full max-w-[375px] h-[667px] bg-white rounded-[3rem] shadow-2xl overflow-hidden border-[8px] border-slate-900 relative">
-        {/* Notch */}
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-xl z-50"></div>
-        {renderScreen()}
-      </div>
+    <div className="w-full h-[100dvh] bg-white overflow-hidden">
+      {renderScreen()}
     </div>
   );
 };
