@@ -1,5 +1,121 @@
 import React, { useState } from 'react';
 import { Play, ArrowLeft, Music, Save, List, CheckCircle, Disc, X, Plus, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+// --- External Components ---
+
+const Button = ({ children, onClick, variant = 'primary', className = '' }) => {
+  const baseStyle = "w-3/4 mx-auto py-3 rounded-full font-semibold shadow-md transition-all duration-200 active:scale-95";
+  const variants = {
+    primary: "bg-slate-800 text-white hover:bg-slate-700",
+    secondary: "bg-slate-600 text-white hover:bg-slate-500",
+    spotify: "bg-green-500 text-white hover:bg-green-600",
+    outline: "border-2 border-slate-800 text-slate-800 hover:bg-slate-100"
+  };
+  return (
+    <button onClick={onClick} className={`${baseStyle} ${variants[variant]} ${className}`}>
+      {children}
+    </button>
+  );
+};
+
+const ScreenContainer = ({ children, title, onBack, rightAction }) => (
+  <div className="w-full h-full bg-indigo-50 flex flex-col relative overflow-hidden font-sans">
+    {/* Status Bar Mock */}
+    <div className="h-6 w-full bg-slate-800 opacity-10 mb-2"></div>
+
+    {/* Header */}
+    <div className="px-6 py-4 flex items-center justify-between">
+      {onBack ? (
+        <button onClick={onBack} className="text-slate-800 hover:text-slate-600">
+          <ArrowLeft size={24} />
+        </button>
+      ) : <div className="w-6"></div>}
+      <div className="flex items-center gap-2">
+        <Music size={20} className="text-slate-800" />
+        <span className="font-bold text-slate-800">Runify</span>
+      </div>
+      <div className="w-6 flex justify-end">{rightAction}</div>
+    </div>
+
+    <div className="flex-1 flex flex-col px-6 pb-8 overflow-y-auto">
+      {title && <h2 className="text-2xl font-bold text-slate-800 mb-6">{title}</h2>}
+      {children}
+    </div>
+  </div>
+);
+
+const GeneratedPlaylistScreen = ({ setScreen, playlistName, setPlaylistName, showSaveModal, setShowSaveModal }) => (
+  <ScreenContainer title="Generated Playlist" onBack={() => setScreen('questions')}>
+    <div className="bg-white rounded-2xl p-4 shadow-sm mb-6 flex-1 min-h-[300px]">
+      {/* Mock Song List */}
+      {[
+        { title: "Eye of the Tiger", artist: "Survivor" },
+        { title: "Stronger", artist: "Kanye West" },
+        { title: "Can't Hold Us", artist: "Macklemore" },
+        { title: "Run the World", artist: "Beyoncé" },
+        { title: "Lose Yourself", artist: "Eminem" },
+      ].map((song, i) => (
+        <div key={i} className="flex items-center gap-3 py-3 border-b border-slate-100 last:border-0">
+          <span className="text-slate-400 font-mono text-sm">{i + 1}</span>
+          <div>
+            <p className="font-medium text-slate-800 text-sm">{song.title}</p>
+            <p className="text-xs text-slate-500">{song.artist}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div className="space-y-3 mt-auto flex flex-col items-center gap-4">
+      <button
+        onClick={() => setShowSaveModal(true)}
+        className="px-8 py-3 bg-slate-800 text-white rounded-full font-semibold shadow-md hover:bg-slate-700 transition-all active:scale-95"
+      >
+        Save playlist
+      </button>
+      <button
+        onClick={() => setScreen('spotify')}
+        className="px-8 py-3 bg-green-500 text-white rounded-full font-semibold shadow-md hover:bg-green-600 transition-all active:scale-95"
+      >
+        Play playlist on Spotify
+      </button>
+    </div>
+
+    {/* Save Modal Overlay */}
+    {showSaveModal && (
+      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div className="bg-white w-full rounded-2xl p-6 shadow-2xl transform transition-all animate-in fade-in zoom-in duration-200">
+          <div className="bg-indigo-600 text-white p-4 -mx-6 -mt-6 rounded-t-2xl mb-6">
+            <h3 className="font-bold text-lg">Save Playlist</h3>
+          </div>
+
+          <label className="block text-sm font-medium text-slate-700 mb-2">Name:</label>
+          <input
+            type="text"
+            className="w-full p-3 border border-slate-300 rounded-lg mb-6 focus:ring-2 focus:ring-indigo-500 outline-none"
+            placeholder="e.g. My Morning Run"
+            value={playlistName}
+            onChange={(e) => setPlaylistName(e.target.value)}
+          />
+
+          <div className="flex justify-center w-full">
+            <Button onClick={() => {
+              setShowSaveModal(false);
+              // In a real app, logic to save would go here
+            }}>
+              Save playlist
+            </Button>
+          </div>
+          <button
+            onClick={() => setShowSaveModal(false)}
+            className="w-full justify-center text-slate-500 text-sm mt-4 hover:text-slate-800"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    )}
+  </ScreenContainer>
+);
+
 const RunifyApp = () => {
   const [screen, setScreen] = useState('welcome');
   const [playlistName, setPlaylistName] = useState('');
@@ -10,47 +126,7 @@ const RunifyApp = () => {
   const [pace, setPace] = useState('');
 
   // --- Components ---
-
-  const Button = ({ children, onClick, variant = 'primary', className = '' }) => {
-    const baseStyle = "w-3/4 mx-auto py-3 rounded-full font-semibold shadow-md transition-all duration-200 active:scale-95";
-    const variants = {
-      primary: "bg-slate-800 text-white hover:bg-slate-700",
-      secondary: "bg-slate-600 text-white hover:bg-slate-500",
-      spotify: "bg-green-500 text-white hover:bg-green-600",
-      outline: "border-2 border-slate-800 text-slate-800 hover:bg-slate-100"
-    };
-    return (
-      <button onClick={onClick} className={`${baseStyle} ${variants[variant]} ${className}`}>
-        {children}
-      </button>
-    );
-  };
-
-  const ScreenContainer = ({ children, title, onBack, rightAction }) => (
-    <div className="w-full h-full bg-indigo-50 flex flex-col relative overflow-hidden font-sans">
-      {/* Status Bar Mock */}
-      <div className="h-6 w-full bg-slate-800 opacity-10 mb-2"></div>
-
-      {/* Header */}
-      <div className="px-6 py-4 flex items-center justify-between">
-        {onBack ? (
-          <button onClick={onBack} className="text-slate-800 hover:text-slate-600">
-            <ArrowLeft size={24} />
-          </button>
-        ) : <div className="w-6"></div>}
-        <div className="flex items-center gap-2">
-          <Music size={20} className="text-slate-800" />
-          <span className="font-bold text-slate-800">Runify</span>
-        </div>
-        <div className="w-6 flex justify-end">{rightAction}</div>
-      </div>
-
-      <div className="flex-1 flex flex-col px-6 pb-8 overflow-y-auto">
-        {title && <h2 className="text-2xl font-bold text-slate-800 mb-6">{title}</h2>}
-        {children}
-      </div>
-    </div>
-  );
+  // (Moved externally)
 
   // --- Screens ---
 
@@ -650,78 +726,7 @@ const RunifyApp = () => {
     );
   };
 
-  const GeneratedPlaylistScreen = () => (
-    <ScreenContainer title="Generated Playlist" onBack={() => setScreen('questions')}>
-      <div className="bg-white rounded-2xl p-4 shadow-sm mb-6 flex-1 min-h-[300px]">
-        {/* Mock Song List */}
-        {[
-          { title: "Eye of the Tiger", artist: "Survivor" },
-          { title: "Stronger", artist: "Kanye West" },
-          { title: "Can't Hold Us", artist: "Macklemore" },
-          { title: "Run the World", artist: "Beyoncé" },
-          { title: "Lose Yourself", artist: "Eminem" },
-        ].map((song, i) => (
-          <div key={i} className="flex items-center gap-3 py-3 border-b border-slate-100 last:border-0">
-            <span className="text-slate-400 font-mono text-sm">{i + 1}</span>
-            <div>
-              <p className="font-medium text-slate-800 text-sm">{song.title}</p>
-              <p className="text-xs text-slate-500">{song.artist}</p>
-            </div>
-          </div>
-        ))}
-      </div>
 
-      <div className="space-y-3 mt-auto flex flex-col items-center gap-4">
-        <button
-          onClick={() => setShowSaveModal(true)}
-          className="px-8 py-3 bg-slate-800 text-white rounded-full font-semibold shadow-md hover:bg-slate-700 transition-all active:scale-95"
-        >
-          Save playlist
-        </button>
-        <button
-          onClick={() => setScreen('spotify')}
-          className="px-8 py-3 bg-green-500 text-white rounded-full font-semibold shadow-md hover:bg-green-600 transition-all active:scale-95"
-        >
-          Play playlist on Spotify
-        </button>
-      </div>
-
-      {/* Save Modal Overlay */}
-      {showSaveModal && (
-        <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-          <div className="bg-white w-full rounded-2xl p-6 shadow-2xl transform transition-all animate-in fade-in zoom-in duration-200">
-            <div className="bg-indigo-600 text-white p-4 -mx-6 -mt-6 rounded-t-2xl mb-6">
-              <h3 className="font-bold text-lg">Save Playlist</h3>
-            </div>
-
-            <label className="block text-sm font-medium text-slate-700 mb-2">Name:</label>
-            <input
-              type="text"
-              className="w-full p-3 border border-slate-300 rounded-lg mb-6 focus:ring-2 focus:ring-indigo-500 outline-none"
-              placeholder="e.g. My Morning Run"
-              value={playlistName}
-              onChange={(e) => setPlaylistName(e.target.value)}
-            />
-
-            <div className="flex justify-center w-full">
-              <Button onClick={() => {
-                setShowSaveModal(false);
-                // In a real app, logic to save would go here
-              }}>
-                Save playlist
-              </Button>
-            </div>
-            <button
-              onClick={() => setShowSaveModal(false)}
-              className="w-full justify-center text-slate-500 text-sm mt-4 hover:text-slate-800"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-    </ScreenContainer>
-  );
 
   const SpotifyScreen = () => (
     <div className="w-full h-full bg-[#1DB954] flex flex-col items-center justify-center text-white relative">
@@ -745,7 +750,13 @@ const RunifyApp = () => {
       case 'welcome': return <WelcomeScreen />;
       case 'questions': return <QuestionsScreen />;
       case 'existing': return <ExistingPlaylistScreen />;
-      case 'generated': return <GeneratedPlaylistScreen />;
+      case 'generated': return <GeneratedPlaylistScreen
+        setScreen={setScreen}
+        playlistName={playlistName}
+        setPlaylistName={setPlaylistName}
+        showSaveModal={showSaveModal}
+        setShowSaveModal={setShowSaveModal}
+      />;
       case 'spotify': return <SpotifyScreen />;
       default: return <WelcomeScreen />;
     }
