@@ -212,6 +212,7 @@ const RunifyApp = () => {
                     className="w-full p-4 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-semibold"
                     placeholder="Pace"
                   />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">km/h</span>
                 </div>
               </div>
             </div>
@@ -238,6 +239,7 @@ const RunifyApp = () => {
                     className="w-full p-4 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-semibold"
                     placeholder="Pace"
                   />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">km/h</span>
                 </div>
               </div>
             </div>
@@ -273,6 +275,13 @@ const RunifyApp = () => {
     const [selectedGenres, setSelectedGenres] = useState(['Pop', 'Rock']); // Active chips
     const [targetDistance, setTargetDistance] = useState('');
     const [targetTime, setTargetTime] = useState('');
+
+    // Target Pace Warmup/Cooldown State
+    const [hasWarmupCooldown, setHasWarmupCooldown] = useState(false);
+    const [paceWarmupTime, setPaceWarmupTime] = useState('');
+    const [paceWarmupPace, setPaceWarmupPace] = useState('');
+    const [paceCooldownTime, setPaceCooldownTime] = useState('');
+    const [paceCooldownPace, setPaceCooldownPace] = useState('');
 
     // Interval Config State
     const [showIntervalConfig, setShowIntervalConfig] = useState(false);
@@ -360,9 +369,82 @@ const RunifyApp = () => {
                   </div>
                 </div>
                 {targetDistance > 0 && targetTime > 0 && (
-                  <div className="text-center p-3 bg-indigo-50 rounded-xl text-indigo-700 font-medium text-sm animate-in fade-in border border-indigo-100">
-                    Estimated Pace: <span className="font-bold text-lg">{(parseFloat(targetTime) / parseFloat(targetDistance)).toFixed(2)}</span> min/km
-                  </div>
+                  <>
+                    <div className="text-center p-3 bg-indigo-50 rounded-xl text-indigo-700 font-medium text-sm animate-in fade-in border border-indigo-100">
+                      Estimated Pace: <span className="font-bold text-lg">{(parseFloat(targetTime) / parseFloat(targetDistance)).toFixed(2)}</span> min/km
+                    </div>
+
+                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 mt-2 animate-in fade-in slide-in-from-top-1">
+                      <div className="flex items-center gap-2 mb-2 cursor-pointer" onClick={() => setHasWarmupCooldown(!hasWarmupCooldown)}>
+                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${hasWarmupCooldown ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white'}`}>
+                          {hasWarmupCooldown && <CheckCircle size={14} className="text-white" />}
+                        </div>
+                        <label className="text-xs font-bold text-slate-700 cursor-pointer">Add Warmup & Cool Down</label>
+                      </div>
+
+                      {hasWarmupCooldown && (
+                        <div className="space-y-4 pt-2 border-t border-slate-200 mt-2">
+                          <div className="text-xs text-slate-500 bg-white p-2 rounded border border-slate-100">
+                            <span className="font-bold text-indigo-600">Recommendation:</span> <span className="font-medium">{(parseFloat(targetTime) / parseFloat(targetDistance) + 1).toFixed(2)} - {(parseFloat(targetTime) / parseFloat(targetDistance) + 1.5).toFixed(2)}</span> min/km
+                          </div>
+
+                          {/* Warmup */}
+                          <div>
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Warmup</span>
+                            <div className="flex gap-2">
+                              <div className="relative flex-1">
+                                <input
+                                  type="number"
+                                  placeholder="Time"
+                                  value={paceWarmupTime}
+                                  onChange={e => setPaceWarmupTime(e.target.value)}
+                                  className="w-full p-2.5 text-sm border border-slate-300 rounded-lg outline-none focus:border-indigo-500"
+                                />
+                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-medium">min</span>
+                              </div>
+                              <div className="relative flex-1">
+                                <input
+                                  type="text"
+                                  placeholder="Pace"
+                                  value={paceWarmupPace}
+                                  onChange={e => setPaceWarmupPace(e.target.value)}
+                                  className="w-full p-2.5 text-sm border border-slate-300 rounded-lg outline-none focus:border-indigo-500"
+                                />
+                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-medium">km/h</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Cooldown */}
+                          <div>
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Cool Down</span>
+                            <div className="flex gap-2">
+                              <div className="relative flex-1">
+                                <input
+                                  type="number"
+                                  placeholder="Time"
+                                  value={paceCooldownTime}
+                                  onChange={e => setPaceCooldownTime(e.target.value)}
+                                  className="w-full p-2.5 text-sm border border-slate-300 rounded-lg outline-none focus:border-indigo-500"
+                                />
+                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-medium">min</span>
+                              </div>
+                              <div className="relative flex-1">
+                                <input
+                                  type="text"
+                                  placeholder="Pace"
+                                  value={paceCooldownPace}
+                                  onChange={e => setPaceCooldownPace(e.target.value)}
+                                  className="w-full p-2.5 text-sm border border-slate-300 rounded-lg outline-none focus:border-indigo-500"
+                                />
+                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-medium">km/h</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -370,12 +452,41 @@ const RunifyApp = () => {
             {/* Conditional Rendering: Configure Interval Run Button */}
             {runType === 'Interval Run' && (
               <div className="animate-in fade-in slide-in-from-top-2 duration-200 mt-3">
-                <button
-                  onClick={() => setShowIntervalConfig(true)}
-                  className="w-full py-3 bg-slate-800 text-white rounded-xl font-semibold shadow-md hover:bg-slate-700 transition-all active:scale-95"
-                >
-                  Configure Interval Run
-                </button>
+                {intervalSettings.warmup && intervalSettings.cycles && intervalSettings.fastTime && intervalSettings.slowTime && intervalSettings.cooldown ? (
+                  <>
+                    <button
+                      onClick={() => setShowIntervalConfig(true)}
+                      className="w-full py-3 bg-green-50 text-green-700 border border-green-200 rounded-xl font-bold shadow-sm hover:bg-green-100 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    >
+                      <CheckCircle size={18} className="text-green-600" />
+                      <span>Configuration Saved, Click to edit</span>
+                    </button>
+
+                    <div className="mt-2 bg-white border border-slate-100 rounded-xl p-3 shadow-sm flex items-center justify-between text-xs">
+                      <div className="flex flex-col items-center flex-1 border-r border-slate-100">
+                        <span className="font-bold text-slate-800 text-sm">{intervalSettings.warmup}m</span>
+                        <span className="text-slate-400">Warmup</span>
+                      </div>
+                      <div className="flex flex-col items-center flex-1 border-r border-slate-100 px-2">
+                        <div className="flex items-center gap-1">
+                          <span className="font-bold text-slate-800 text-sm">{intervalSettings.cycles}x</span>
+                        </div>
+                        <span className="text-slate-400 text-[10px] text-center">{intervalSettings.fastTime}m / {intervalSettings.slowTime}m</span>
+                      </div>
+                      <div className="flex flex-col items-center flex-1">
+                        <span className="font-bold text-slate-800 text-sm">{intervalSettings.cooldown}m</span>
+                        <span className="text-slate-400">Cooldown</span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setShowIntervalConfig(true)}
+                    className="w-full py-3 bg-slate-800 text-white rounded-xl font-semibold shadow-md hover:bg-slate-700 transition-all active:scale-95"
+                  >
+                    Configure Interval Run
+                  </button>
+                )}
               </div>
             )}
           </div>
