@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Play, ArrowLeft, Music, Save, List, CheckCircle, Disc, X, Plus, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import GenresSection from './components/GenresSection';
 // --- External Components ---
 
 const Button = ({ children, onClick, variant = 'primary', className = '' }) => {
@@ -43,78 +44,144 @@ const ScreenContainer = ({ children, title, onBack, rightAction }) => (
   </div>
 );
 
-const GeneratedPlaylistScreen = ({ setScreen, playlistName, setPlaylistName, showSaveModal, setShowSaveModal }) => (
-  <ScreenContainer title="Generated Playlist" onBack={() => setScreen('questions')}>
-    <div className="bg-white rounded-2xl p-4 shadow-sm mb-6 flex-1 min-h-[300px]">
-      {/* Mock Song List */}
-      {[
-        { title: "Eye of the Tiger", artist: "Survivor" },
-        { title: "Stronger", artist: "Kanye West" },
-        { title: "Can't Hold Us", artist: "Macklemore" },
-        { title: "Run the World", artist: "Beyoncé" },
-        { title: "Lose Yourself", artist: "Eminem" },
-      ].map((song, i) => (
-        <div key={i} className="flex items-center gap-3 py-3 border-b border-slate-100 last:border-0">
-          <span className="text-slate-400 font-mono text-sm">{i + 1}</span>
-          <div>
-            <p className="font-medium text-slate-800 text-sm">{song.title}</p>
-            <p className="text-xs text-slate-500">{song.artist}</p>
+const GeneratedPlaylistScreen = ({ setScreen, playlistName, setPlaylistName, showSaveModal, setShowSaveModal, selectedGenres }) => {
+  const [songs, setSongs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    const fetchSongs = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/data/songs.csv');
+        const text = await response.text();
+
+        // Simple CSV Parser with quote handling
+        const lines = text.split('\n');
+
+        let parsedData = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          if (!lines[i].trim()) continue;
+
+          // This regex splits by comma that is NOT inside quotes
+          const currentLine = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+
+          // Basic handling to avoid index out of bounds
+          if (currentLine.length < 10) continue; // Need up to index 9 for genre
+
+          const obj = {};
+          // Mapping based on actual CSV headers: 
+          // 0: track_id
+          // 1: track_name
+          // 2: track_artist
+          // ...
+          // 9: playlist_genre
+          obj.title = currentLine[1]?.trim();
+          obj.artist = currentLine[2]?.trim();
+          obj.genre = currentLine[9]?.trim();
+
+          if (obj.title && obj.artist) {
+            parsedData.push(obj);
+          }
+        }
+
+        // Filter by selected genres if any are selected
+        if (selectedGenres && selectedGenres.length > 0) {
+          parsedData = parsedData.filter(song => selectedGenres.includes(song.genre));
+        }
+
+        if (parsedData.length > 0) {
+          // Shuffle and pick 10
+          const shuffled = parsedData.sort(() => 0.5 - Math.random());
+          setSongs(shuffled.slice(0, 10));
+        } else {
+          // Fallback if no songs match
+          setSongs([]);
+        }
+      } catch (error) {
+        console.error("Error fetching songs:", error);
+        setSongs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSongs();
+  }, [selectedGenres]);
+
+  return (
+    <ScreenContainer title="Generated Playlist" onBack={() => setScreen('questions')}>
+      <div className="bg-white rounded-2xl p-4 shadow-sm mb-6 flex-1 min-h-[300px] overflow-y-auto">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center h-full text-slate-400">
+            <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin mb-4"></div>
+            <p>Curating your playlist...</p>
           </div>
-        </div>
-      ))}
-    </div>
-
-    <div className="space-y-3 mt-auto flex flex-col items-center gap-4">
-      <button
-        onClick={() => setShowSaveModal(true)}
-        className="px-8 py-3 bg-slate-800 text-white rounded-full font-semibold shadow-md hover:bg-slate-700 transition-all active:scale-95"
-      >
-        Save playlist
-      </button>
-      <button
-        onClick={() => setScreen('spotify')}
-        className="px-8 py-3 bg-green-500 text-white rounded-full font-semibold shadow-md hover:bg-green-600 transition-all active:scale-95"
-      >
-        Play playlist on Spotify
-      </button>
-    </div>
-
-    {/* Save Modal Overlay */}
-    {showSaveModal && (
-      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-        <div className="bg-white w-full rounded-2xl p-6 shadow-2xl transform transition-all animate-in fade-in zoom-in duration-200">
-          <div className="bg-indigo-600 text-white p-4 -mx-6 -mt-6 rounded-t-2xl mb-6">
-            <h3 className="font-bold text-lg">Save Playlist</h3>
-          </div>
-
-          <label className="block text-sm font-medium text-slate-700 mb-2">Name:</label>
-          <input
-            type="text"
-            className="w-full p-3 border border-slate-300 rounded-lg mb-6 focus:ring-2 focus:ring-indigo-500 outline-none"
-            placeholder="e.g. My Morning Run"
-            value={playlistName}
-            onChange={(e) => setPlaylistName(e.target.value)}
-          />
-
-          <div className="flex justify-center w-full">
-            <Button onClick={() => {
-              setShowSaveModal(false);
-              // In a real app, logic to save would go here
-            }}>
-              Save playlist
-            </Button>
-          </div>
-          <button
-            onClick={() => setShowSaveModal(false)}
-            className="w-full justify-center text-slate-500 text-sm mt-4 hover:text-slate-800"
-          >
-            Cancel
-          </button>
-        </div>
+        ) : (
+          songs.map((song, i) => (
+            <div key={i} className="flex items-center gap-3 py-3 border-b border-slate-100 last:border-0">
+              <span className="text-slate-400 font-mono text-sm w-4 text-center">{i + 1}</span>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-slate-800 text-sm truncate">{song.title}</p>
+                <p className="text-xs text-slate-500 truncate">{song.artist}</p>
+              </div>
+            </div>
+          ))
+        )}
       </div>
-    )}
-  </ScreenContainer>
-);
+
+      <div className="space-y-3 mt-auto flex flex-col items-center gap-4">
+        <button
+          onClick={() => setShowSaveModal(true)}
+          className="px-8 py-3 bg-slate-800 text-white rounded-full font-semibold shadow-md hover:bg-slate-700 transition-all active:scale-95"
+        >
+          Save playlist
+        </button>
+        <button
+          onClick={() => setScreen('spotify')}
+          className="px-8 py-3 bg-green-500 text-white rounded-full font-semibold shadow-md hover:bg-green-600 transition-all active:scale-95"
+        >
+          Play playlist on Spotify
+        </button>
+      </div>
+
+      {/* Save Modal Overlay */}
+      {showSaveModal && (
+        <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+          <div className="bg-white w-full rounded-2xl p-6 shadow-2xl transform transition-all animate-in fade-in zoom-in duration-200">
+            <div className="bg-indigo-600 text-white p-4 -mx-6 -mt-6 rounded-t-2xl mb-6">
+              <h3 className="font-bold text-lg">Save Playlist</h3>
+            </div>
+
+            <label className="block text-sm font-medium text-slate-700 mb-2">Name:</label>
+            <input
+              type="text"
+              className="w-full p-3 border border-slate-300 rounded-lg mb-6 focus:ring-2 focus:ring-indigo-500 outline-none"
+              placeholder="e.g. My Morning Run"
+              value={playlistName}
+              onChange={(e) => setPlaylistName(e.target.value)}
+            />
+
+            <div className="flex justify-center w-full">
+              <Button onClick={() => {
+                setShowSaveModal(false);
+                // In a real app, logic to save would go here
+              }}>
+                Save playlist
+              </Button>
+            </div>
+            <button
+              onClick={() => setShowSaveModal(false)}
+              className="w-full justify-center text-slate-500 text-sm mt-4 hover:text-slate-800"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </ScreenContainer>
+  );
+};
 
 const RunifyApp = () => {
   const [screen, setScreen] = useState('welcome');
@@ -124,6 +191,7 @@ const RunifyApp = () => {
   const [distance, setDistance] = useState('');
   const [time, setTime] = useState('');
   const [pace, setPace] = useState('');
+  const [selectedGenres, setSelectedGenres] = useState([]); // Shared state for genre filtering
 
   // --- Components ---
   // (Moved externally)
@@ -268,11 +336,11 @@ const RunifyApp = () => {
     );
   };
 
-  const QuestionsScreen = () => {
+  const QuestionsScreen = ({ selectedGenres, setSelectedGenres }) => {
     // --- Local State for this screen ---
     const [distMode, setDistMode] = useState('Distance'); // Toggle state: Distance vs Time
     const [runType, setRunType] = useState('Free Run');   // Toggle state: Free Run vs Pace
-    const [selectedGenres, setSelectedGenres] = useState(['Pop', 'Rock']); // Active chips
+    // selectedGenres is now passed as prop
     const [targetDistance, setTargetDistance] = useState('');
     const [targetTime, setTargetTime] = useState('');
 
@@ -302,15 +370,6 @@ const RunifyApp = () => {
     const [isPopularityEnabled, setIsPopularityEnabled] = useState(false);// Popularity checkbox state
     const [showMusicPrefs, setShowMusicPrefs] = useState(false);          // Master accordion state
     const [popularity, setPopularity] = useState(50);     // Popularity slider
-
-    // Helper function to toggle genres on/off
-    const toggleGenre = (genre) => {
-      if (selectedGenres.includes(genre)) {
-        setSelectedGenres(selectedGenres.filter(g => g !== genre)); // Remove if exists
-      } else {
-        setSelectedGenres([...selectedGenres, genre]); // Add if not exists
-      }
-    };
 
     if (showIntervalConfig) {
       return <IntervalConfigScreen onBack={() => setShowIntervalConfig(false)} settings={intervalSettings} setSettings={setIntervalSettings} />;
@@ -521,36 +580,10 @@ const RunifyApp = () => {
                   </div>
 
                   {isGenreEnabled && (
-                    <div className="animate-in fade-in slide-in-from-top-2 duration-200">
-                      {/* Input for searching/adding */}
-                      <div className="relative mb-3">
-                        <input
-                          type="text"
-                          placeholder="Search genres..."
-                          className="w-full p-3 pl-10 bg-white border border-slate-300 rounded-lg text-sm focus:border-indigo-500 outline-none"
-                        />
-                        <Plus size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                      </div>
-
-                      {/* Filter Chips */}
-                      <div className="flex flex-wrap gap-2">
-                        {['Pop', 'Rock', 'EDM'].map(genre => {
-                          const isSelected = selectedGenres.includes(genre);
-                          return (
-                            <button
-                              key={genre}
-                              onClick={() => toggleGenre(genre)}
-                              className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${isSelected
-                                ? 'bg-slate-800 border-slate-800 text-white'
-                                : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'
-                                }`}
-                            >
-                              {genre}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    <GenresSection
+                      selectedGenres={selectedGenres}
+                      setSelectedGenres={setSelectedGenres}
+                    />
                   )}
                 </div>
 
@@ -859,7 +892,10 @@ const RunifyApp = () => {
   const renderScreen = () => {
     switch (screen) {
       case 'welcome': return <WelcomeScreen />;
-      case 'questions': return <QuestionsScreen />;
+      case 'questions': return <QuestionsScreen
+        selectedGenres={selectedGenres}
+        setSelectedGenres={setSelectedGenres}
+      />;
       case 'existing': return <ExistingPlaylistScreen />;
       case 'generated': return <GeneratedPlaylistScreen
         setScreen={setScreen}
@@ -867,6 +903,7 @@ const RunifyApp = () => {
         setPlaylistName={setPlaylistName}
         showSaveModal={showSaveModal}
         setShowSaveModal={setShowSaveModal}
+        selectedGenres={selectedGenres}
       />;
       case 'spotify': return <SpotifyScreen />;
       default: return <WelcomeScreen />;
