@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Music, ChevronUp, ChevronDown, CheckCircle } from 'lucide-react';
+import { Music, ChevronUp, ChevronDown, CheckCircle, AlertCircle } from 'lucide-react';
 import ScreenContainer from '../components/ScreenContainer';
 import GenresSection from '../components/GenresSection';
 import IntervalConfigScreen from './IntervalConfigScreen';
@@ -54,6 +54,28 @@ const QuestionsScreen = ({
     const [isGenreEnabled, setIsGenreEnabled] = useState(false);          // Genre checkbox state
 
     const [showMusicPrefs, setShowMusicPrefs] = useState(false);          // Master accordion state
+    const [showWarning, setShowWarning] = useState(false);                // Warning popup state
+
+    const isRunValid = () => {
+        if (runType === 'Target Pace') {
+            return targetDistance > 0 && targetTime > 0;
+        }
+        if (runType === 'Interval Run') {
+            const { warmup, cycles, fastTime, slowTime, cooldown } = intervalSettings;
+            // Ensure all fields have values
+            return warmup && cycles && fastTime && slowTime && cooldown;
+        }
+        return false;
+    };
+
+    const handleGenerateClick = () => {
+        if (!isRunValid()) {
+            setShowWarning(true);
+            setTimeout(() => setShowWarning(false), 3000);
+            return;
+        }
+        setScreen('generated');
+    };
 
     if (showIntervalConfig) {
         return <IntervalConfigScreen onBack={() => setShowIntervalConfig(false)} settings={intervalSettings} setSettings={setIntervalSettings} />;
@@ -74,7 +96,7 @@ const QuestionsScreen = ({
                             <button
                                 key={type}
                                 onClick={() => setRunType(type)}
-                                className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${runType === type ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'
+                                className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${runType === type ? 'bg-[#F59E0B] shadow text-white' : 'text-slate-500 hover:text-slate-700'
                                     }`}
                             >
                                 {type}
@@ -86,7 +108,7 @@ const QuestionsScreen = ({
                     {runType === 'Target Pace' && (
                         <div className="animate-in fade-in slide-in-from-top-2 duration-200 space-y-3 mt-3">
                             <div>
-                                <label className="text-xs text-slate-500 mb-1 block ml-1">Distance</label>
+                                <label className="text-sm font-bold text-[#1e293b] mb-1 block ml-1">Distance</label>
                                 <div className="relative">
                                     <input
                                         type="number"
@@ -99,7 +121,7 @@ const QuestionsScreen = ({
                                 </div>
                             </div>
                             <div>
-                                <label className="text-xs text-slate-500 mb-1 block ml-1">Target Time</label>
+                                <label className="text-sm font-bold text-[#1e293b] mb-1 block ml-1">Target Time</label>
                                 <div className="relative">
                                     <input
                                         type="number"
@@ -113,27 +135,27 @@ const QuestionsScreen = ({
                             </div>
                             {targetDistance > 0 && targetTime > 0 && (
                                 <>
-                                    <div className="text-center p-3 bg-indigo-50 rounded-xl text-indigo-700 font-medium text-sm animate-in fade-in border border-indigo-100">
+                                    <div className="text-center p-3 bg-indigo-50 rounded-xl text-[#1e293b] font-medium text-sm animate-in fade-in border border-indigo-100">
                                         Estimated Pace: <span className="font-bold text-lg">{(parseFloat(targetTime) / parseFloat(targetDistance)).toFixed(2)}</span> min/km
                                     </div>
 
                                     <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 mt-2 animate-in fade-in slide-in-from-top-1">
                                         <div className="flex items-center gap-2 mb-2 cursor-pointer" onClick={() => setHasWarmupCooldown(!hasWarmupCooldown)}>
-                                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${hasWarmupCooldown ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white'}`}>
+                                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${hasWarmupCooldown ? 'bg-[#1e293b] border-[#1e293b]' : 'border-slate-300 bg-white'}`}>
                                                 {hasWarmupCooldown && <CheckCircle size={14} className="text-white" />}
                                             </div>
-                                            <label className="text-xs font-bold text-slate-700 cursor-pointer">Add Warmup & Cool Down</label>
+                                            <label className="text-sm font-bold text-[#1e293b] cursor-pointer">Add Warmup & Cool Down</label>
                                         </div>
 
                                         {hasWarmupCooldown && (
                                             <div className="space-y-4 pt-2 border-t border-slate-200 mt-2">
-                                                <div className="text-xs text-slate-500 bg-white p-2 rounded border border-slate-100">
-                                                    <span className="font-bold text-indigo-600">Recommendation:</span> <span className="font-medium">{(parseFloat(targetTime) / parseFloat(targetDistance) + 1).toFixed(2)} - {(parseFloat(targetTime) / parseFloat(targetDistance) + 1.5).toFixed(2)}</span> min/km
+                                                <div className="text-sm text-slate-500 bg-white p-2 rounded border border-slate-100">
+                                                    <span className="font-bold text-[#1e293b]">Recommendation:</span> <span className="font-medium">{(parseFloat(targetTime) / parseFloat(targetDistance) + 1).toFixed(2)} - {(parseFloat(targetTime) / parseFloat(targetDistance) + 1.5).toFixed(2)}</span> min/km
                                                 </div>
 
                                                 {/* Warmup */}
                                                 <div>
-                                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Warmup</span>
+                                                    <span className="text-sm font-bold text-[#1e293b] uppercase tracking-wider block mb-1">Warmup</span>
                                                     <div className="flex gap-2">
                                                         <div className="relative flex-1">
                                                             <input
@@ -160,7 +182,7 @@ const QuestionsScreen = ({
 
                                                 {/* Cooldown */}
                                                 <div>
-                                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Cool Down</span>
+                                                    <span className="text-sm font-bold text-[#1e293b] uppercase tracking-wider block mb-1">Cool Down</span>
                                                     <div className="flex gap-2">
                                                         <div className="relative flex-1">
                                                             <input
@@ -239,13 +261,13 @@ const QuestionsScreen = ({
                 <div className="border border-slate-200 rounded-xl bg-white overflow-hidden">
                     <button
                         onClick={() => setShowMusicPrefs(!showMusicPrefs)}
-                        className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors"
+                        className={`w-full flex items-center justify-between p-4 transition-colors ${showMusicPrefs ? 'bg-[#F59E0B] hover:bg-[#e08e09]' : 'bg-slate-50 hover:bg-slate-100'}`}
                     >
                         <div className="flex items-center gap-2">
-                            <Music size={20} className="text-slate-800" />
-                            <span className="font-bold text-slate-800">Music Preferences</span>
+                            <Music size={20} className={showMusicPrefs ? 'text-white' : 'text-slate-800'} />
+                            <span className={`font-bold ${showMusicPrefs ? 'text-white' : 'text-slate-800'}`}>Music Preferences</span>
                         </div>
-                        {showMusicPrefs ? <ChevronUp size={20} className="text-slate-500" /> : <ChevronDown size={20} className="text-slate-500" />}
+                        {showMusicPrefs ? <ChevronUp size={20} className="text-white" /> : <ChevronDown size={20} className="text-slate-500" />}
                     </button>
 
                     {showMusicPrefs && (
@@ -287,7 +309,7 @@ const QuestionsScreen = ({
                                     <div className="bg-white p-4 rounded-xl border border-slate-200 animate-in fade-in slide-in-from-top-2 duration-200">
                                         <div className="flex justify-between text-sm font-bold text-slate-800 mb-4">
                                             <span>{yearRange.min}</span>
-                                            <span className="text-indigo-600 text-xs uppercase tracking-wider">Range</span>
+                                            <span className="text-[#1e293b] text-xs uppercase tracking-wider">Range</span>
                                             <span>{yearRange.max}</span>
                                         </div>
 
@@ -380,7 +402,7 @@ const QuestionsScreen = ({
                                         </div>
                                         <input
                                             type="range"
-                                            className="w-full accent-indigo-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                            className="w-full accent-[#1e293b] h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
                                             value={popularity}
                                             onChange={(e) => setPopularity(e.target.value)}
                                         />
@@ -395,13 +417,23 @@ const QuestionsScreen = ({
             </div>
 
             {/* Generate Button - Centered */}
-            <div className="mt-8 flex justify-center">
+            <div className="mt-8 flex flex-col items-center relative">
                 <button
-                    onClick={() => setScreen('generated')}
-                    className="px-8 py-3 bg-slate-800 text-white rounded-full font-semibold shadow-md hover:bg-slate-700 transition-all active:scale-95"
+                    onClick={handleGenerateClick}
+                    className={`px-8 py-3 rounded-full font-semibold shadow-md transition-all active:scale-95 ${isRunValid()
+                        ? 'bg-slate-800 text-white hover:bg-slate-700'
+                        : 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-80'
+                        }`}
                 >
                     Generate playlist
                 </button>
+
+                {showWarning && (
+                    <div className="absolute -top-12 flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-semibold animate-in slide-in-from-bottom-2 fade-in duration-200 whitespace-nowrap z-10">
+                        <AlertCircle size={16} />
+                        <span>Please input your run details first</span>
+                    </div>
+                )}
             </div>
         </ScreenContainer>
     );

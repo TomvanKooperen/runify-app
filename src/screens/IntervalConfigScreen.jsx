@@ -28,8 +28,8 @@ const IntervalConfigScreen = ({ onBack, settings, setSettings }) => {
                 {/* Interval Group */}
                 <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 space-y-6">
                     <div className="flex items-center gap-2 mb-2">
-                        <div className="w-1 h-4 bg-indigo-500 rounded-full"></div>
-                        <h3 className="text-sm font-bold text-indigo-900 uppercase tracking-wider">Interval Cycle</h3>
+                        <div className="w-1 h-4 bg-[#1e293b] rounded-full"></div>
+                        <h3 className="text-sm font-bold text-[#1e293b] uppercase tracking-wider">Interval Cycle</h3>
                     </div>
 
                     {/* Cycles */}

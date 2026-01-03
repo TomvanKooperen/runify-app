@@ -86,9 +86,10 @@ const ExistingPlaylistScreen = ({ setScreen, savedPlaylists = [], deletePlaylist
                                 iconBoxStyle = "bg-slate-100 text-slate-400";
                             }
                         } else if (isSelected) {
-                            containerStyle = "bg-blue-50 border-runify-blue ring-1 ring-runify-blue";
-                            iconBoxStyle = "bg-blue-200 text-blue-800";
-                            textStyle = "text-blue-900";
+                            containerStyle = "bg-[#FFFBEB] border-[#F59E0B] ring-1 ring-[#F59E0B]";
+                            iconBoxStyle = "bg-[#FEF3C7] text-[#FBBF24] text-[#F59E0B]"; // amber-100, amber-500ish text
+                            iconBoxStyle = "bg-[#FFF7ED] text-[#F59E0B]";
+                            textStyle = "text-slate-900";
                         }
 
                         return (
@@ -113,7 +114,7 @@ const ExistingPlaylistScreen = ({ setScreen, savedPlaylists = [], deletePlaylist
                                                 e.stopPropagation();
                                                 setPreviewPlaylist(playlist);
                                             }}
-                                            className="p-2 text-slate-400 hover:text-runify-blue hover:bg-blue-50 rounded-full transition-colors"
+                                            className="p-2 text-slate-400 hover:text-[#F59E0B] hover:bg-orange-50 rounded-full transition-colors"
                                             title="Preview Songs"
                                         >
                                             <Eye size={20} />
@@ -124,7 +125,7 @@ const ExistingPlaylistScreen = ({ setScreen, savedPlaylists = [], deletePlaylist
                                             {isSelected && <CheckCircle size={14} className="text-white" />}
                                         </div>
                                     ) : (
-                                        isSelected ? <CheckCircle size={20} className="text-runify-blue" /> : <Play size={16} className="text-slate-400" />
+                                        isSelected ? <CheckCircle size={20} className="text-[#F59E0B]" /> : <Play size={16} className="text-slate-400" />
                                     )}
                                 </div>
                             </div>

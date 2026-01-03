@@ -139,8 +139,8 @@ const GeneratedPlaylistScreen = ({ setScreen, savePlaylist, playlistName, setPla
                     if (!paceVal || paceVal <= 0) return [];
 
                     const targetBPM = 210 - (5 * paceVal);
-                    const minBPM = targetBPM * 0.98;
-                    const maxBPM = targetBPM * 1.02;
+                    const minBPM = targetBPM * 1;
+                    const maxBPM = targetBPM * 1.03;
 
                     let pool = parsedData.filter(song =>
                         song.tempo >= minBPM && song.tempo <= maxBPM
@@ -160,11 +160,13 @@ const GeneratedPlaylistScreen = ({ setScreen, savePlaylist, playlistName, setPla
                         // Avoid duplicates if possible (simple check by title)
                         if (finalSongs.some(s => s.title === song.title) || selected.some(s => s.title === song.title)) continue;
 
-                        if (currentDur + song.duration_ms <= targetDurMs + 120000) {
-                            selected.push({ ...song, phase: phaseName }); // Add phase tag for debug
-                            currentDur += song.duration_ms;
-                        }
-                        if (currentDur >= targetDurMs - 60000) break;
+                        // Add songs until we reach the target duration. 
+                        // Allow overshooting (no upper bound check here) to ensure we never fall short.
+                        selected.push({ ...song, phase: phaseName }); // Add phase tag for debug
+                        currentDur += song.duration_ms;
+
+                        // Stop ONLY when we have met or exceeded the target duration
+                        if (currentDur >= targetDurMs) break;
                     }
                     return selected;
                 };
@@ -254,10 +256,9 @@ const GeneratedPlaylistScreen = ({ setScreen, savePlaylist, playlistName, setPla
             rightAction={
                 <button
                     onClick={fetchSongs}
-                    className="p-2 text-runify-blue hover:text-blue-700 hover:bg-blue-50 rounded-full transition-colors"
-                    title="Reload Playlist"
+                    className="px-3 py-1.5 bg-[#F59E0B] text-white text-xs font-bold rounded-lg shadow-sm hover:bg-opacity-90 transition-all active:scale-95"
                 >
-                    <RotateCw size={20} />
+                    Regenerate Playlist
                 </button>
             }
         >
@@ -312,7 +313,7 @@ const GeneratedPlaylistScreen = ({ setScreen, savePlaylist, playlistName, setPla
             <div className="space-y-3 mt-auto flex flex-col items-center gap-4">
                 <button
                     onClick={() => setShowSaveModal(true)}
-                    className="px-8 py-3 bg-runify-blue text-white rounded-full font-semibold shadow-md hover:bg-opacity-90 transition-all active:scale-95"
+                    className="px-8 py-3 bg-[#1e293b] text-white rounded-full font-semibold shadow-md hover:bg-opacity-90 transition-all active:scale-95"
                 >
                     Save playlist
                 </button>
@@ -328,7 +329,7 @@ const GeneratedPlaylistScreen = ({ setScreen, savePlaylist, playlistName, setPla
             {showSaveModal && (
                 <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-6">
                     <div className="bg-white w-full rounded-2xl p-6 shadow-2xl transform transition-all animate-in fade-in zoom-in duration-200">
-                        <div className="bg-runify-blue text-white p-4 -mx-6 -mt-6 rounded-t-2xl mb-6">
+                        <div className="bg-[#F59E0B] text-white p-4 -mx-6 -mt-6 rounded-t-2xl mb-6">
                             <h3 className="font-bold text-lg">Save Playlist</h3>
                         </div>
 
